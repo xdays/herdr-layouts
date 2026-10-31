@@ -208,17 +208,14 @@ function pill(id, label, onClick, solid = false) {
     .child(label);
 }
 
-// Files and Changes share the right sidebar (layout nodes "panel" / "panel-body"),
-// the way Herdr's own tab bar switches them: clicking the shown one hides the panel.
-function panelPill(id, label, icon) {
-  const panel = layout()?.children?.find((n) => n.id === "panel");
-  const body = panel?.children?.find((n) => n.id === "panel-body");
-  const on = Boolean(panel && !panel.hidden && body?.active === id);
+// The three side-column buttons (Activity, Files, Changes) are one kind of button: outlined and
+// grey while their column is away, filled and white while it is on screen.
+function togglePill(id, label, on, onClick, icon = null) {
   return own(h_flex())
-    .id(`gb-panel-${id}`)
+    .id(id)
     .flex_none()
     .h(32)
-    .px(12)
+    .px(icon === null ? 14 : 12)
     .gap(6)
     .items_center()
     .justify_center()
@@ -228,18 +225,33 @@ function panelPill(id, label, icon) {
     .font_semibold()
     .when(on, (el) => el.bg("#ffffff14").text_color(C.text))
     .when(!on, (el) => el.border_1().border_color(C.edge).text_color(C.muted).hover((s) => s.bg("#ffffff0d").text_color(C.text)))
-    .tooltip(on ? `Hide ${label}` : `Show ${label}`)
-    .accessibility_label(on ? `Hide ${label}` : `Show ${label}`)
-    .on_click((_event, cx) => {
-      cx.stop_propagation();
-      if (on) run("layout.hide", { id: "panel" });
-      else {
-        run("layout.select", { stack: "panel-body", child: id });
-        run("layout.show", { id: "panel" });
-      }
-    })
-    .child(svg(icon).size(14))
+    .tooltip(`${on ? "Hide" : "Show"} ${label}`)
+    .accessibility_label(`${on ? "Hide" : "Show"} ${label}`)
+    .on_click((_event, cx) => { cx.stop_propagation(); onClick(); })
+    .when(icon !== null, (el) => el.child(svg(icon).size(14)))
     .child(label);
+}
+
+// Activity is a column of its own (layout node "activity"), so its pill lights while it shows.
+function activityPill() {
+  const node = layout()?.children?.find((n) => n.id === "activity");
+  const on = Boolean(node && !node.hidden);
+  return togglePill("gb-activity", "Activity", on, () => run("layout.toggle", { id: "activity" }));
+}
+
+// Files and Changes share the right sidebar (layout nodes "panel" / "panel-body"),
+// the way Herdr's own tab bar switches them: clicking the shown one hides the panel.
+function panelPill(id, label, icon) {
+  const panel = layout()?.children?.find((n) => n.id === "panel");
+  const body = panel?.children?.find((n) => n.id === "panel-body");
+  const on = Boolean(panel && !panel.hidden && body?.active === id);
+  return togglePill(`gb-panel-${id}`, label, on, () => {
+    if (on) run("layout.hide", { id: "panel" });
+    else {
+      run("layout.select", { stack: "panel-body", child: id });
+      run("layout.show", { id: "panel" });
+    }
+  }, icon);
 }
 
 const section = (id, text, extra = "", key = null) =>
@@ -578,7 +590,7 @@ export default class GrokBot extends View {
         el.child(pill("gb-rename-current", "Rename", () => renameTab(a?.tab ?? tab?.id))),
       )
       .child(pill("gb-split", "Computer", () => run("pane.split", { direction: "right" })))
-      .child(pill("gb-activity", "Activity", () => run("layout.toggle", { id: "activity" })))
+      .child(activityPill())
       .when(Boolean(layout()?.children?.some((n) => n.id === "panel")), (el) =>
         el.child(panelPill("files", "Files", "mods/files/file.svg"))
           .child(panelPill("changes", "Changes", "mods/changes/changes.svg")),
