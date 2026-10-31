@@ -1,0 +1,140 @@
+{
+  "id": "root",
+  "type": "row",
+  "titlebar": "none",
+  "traffic_lights": [
+    18,
+    20
+  ],
+  "preview": "layouts/grokbot.svg",
+  "theme": "graphite",
+  "ui_font": "Geist",
+  "font": "Geist Mono",
+  "font_size": 13,
+  "terminal_padding": [
+    18,
+    14
+  ],
+  "colors": {
+    "background": "#101014",
+    "canvas": "#0b0b0e",
+    "chrome": "#16161a",
+    "surface": "#16161a",
+    "popover": "#1a1a1f",
+    "raised": "#1f1f25",
+    "hover": "#ffffff0d",
+    "selected": "#ffffff14",
+    "border": "#24242b",
+    "input": "#34343c",
+    "accent": "#885cf5",
+    "foreground": "#f4f4f5",
+    "muted": "#a1a1aa",
+    "dim": "#71717a",
+    "selection": "#885cf555",
+    "working": "#54b9a6",
+    "blocked": "#f19d38",
+    "done": "#3c82f6"
+  },
+  "background": "#0b0b0e",
+  "divider": {
+    "width": 1,
+    "color": "#1f1f25"
+  },
+  "children": [
+    {
+      "id": "sidebar",
+      "type": "block",
+      "size": {
+        "px": 268
+      },
+      "min": 200,
+      "max": 420,
+      "window_drag": true,
+      "background": "#0b0b0e",
+      "content": {
+        "mod": "grokbot",
+        "props": {
+          "role": "sidebar"
+        }
+      }
+    },
+    {
+      "id": "thread",
+      "type": "column",
+      "resizable": false,
+      "background": "#101014",
+      "children": [
+        {
+          "id": "thread-head",
+          "type": "block",
+          "size": {
+            "px": 64
+          },
+          "window_drag": true,
+          "content": {
+            "mod": "grokbot",
+            "props": {
+              "role": "header"
+            }
+          }
+        },
+        {
+          "id": "conversation",
+          "type": "block",
+          "padding": [
+            0,
+            14
+          ],
+          "content": {
+            "tab": "active",
+            "pane": {
+              "gap": 10,
+              "radius": 14,
+              "background": "#101014",
+              "lone": false,
+              "border": {
+                "width": 1,
+                "color": "#24242b"
+              },
+              "focus": {
+                "width": 1,
+                "color": "#3a3a44"
+              }
+            }
+          }
+        },
+        {
+          "id": "composer",
+          "type": "block",
+          "size": {
+            "px": 96
+          },
+          "content": {
+            "mod": "grokbot",
+            "props": {
+              "role": "composer"
+            }
+          },
+          "hidden": true
+        }
+      ]
+    },
+    {
+      "id": "activity",
+      "type": "block",
+      "size": {
+        "px": 300
+      },
+      "min": 240,
+      "max": 480,
+      "window_drag": true,
+      "background": "#0b0b0e",
+      "content": {
+        "mod": "grokbot",
+        "props": {
+          "role": "activity"
+        }
+      }
+    }
+  ]
+}
