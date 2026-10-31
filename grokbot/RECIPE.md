@@ -45,8 +45,11 @@ thread), separated by 1px `#1f1f25` dividers. The window draws its own chrome: r
      the current Bot's 36px avatar, its name 15px semibold, and under it 12px dim
      `t1j · hogwarts · ~/Workspace/app · main`. On the right: a status chip (26px, fully rounded,
      12px semibold, tinted with the status color at 13% `22` alpha, with a 7px dot), then five
-     pills — "Rename", "Computer", "Activity", "Files", "Changes". The last two are filled
-     (`#ffffff14`, full text colour) when that panel is the one showing, outlined otherwise.
+     pills in two groups. "Rename" and "Computer" are plain actions: white text on a 1px
+     `#34343c` outline. "Activity", "Files" and "Changes" are the three side-column buttons, one
+     look and one rule between them: grey text `#a1a1aa` on the same outline while their column is
+     away, filled `#ffffff14` with white text while it is on screen — "Activity" for the Activity
+     column, "Files" / "Changes" for the panel the right sidebar is showing.
    * **The conversation:** the active tab's terminals as cards, 10px gaps, 14px radius, 1px
      `#24242b` border that turns `#3a3a44` when focused, on `#101014`. Terminals use Geist Mono
      13px with 18/14 padding. A one-pane tab is framed too (`lone: false`).
@@ -108,9 +111,9 @@ blocked `#f19d38`, done `#3c82f6`. Bot palette: `#ED712E`, `#EB4699`, `#885CF5`,
 * "+ Add machine" runs `mod.open { name: "machine-add" }`; "Manage" runs
   `app.settings { section: "machines" }`.
 * The bottom workspace card opens Herdr's `picker` (popup at top, 640 wide, 0.8 of the height).
-* Header: the toggle runs `layout.toggle { id: "sidebar" }`, "Activity" runs
-  `layout.toggle { id: "activity" }`, "Computer" runs `pane.split { direction: "right" }`,
-  "Rename" renames the current Bot's tab, the status chip is not clickable.
+* Header: the toggle runs `layout.toggle { id: "sidebar" }`, "Computer" runs
+  `pane.split { direction: "right" }`, "Rename" renames the current Bot's tab, the status chip is
+  not clickable. "Activity" runs `layout.toggle { id: "activity" }`.
 * "Files" and "Changes" show the right sidebar on that panel — `layout.select { stack:
   "panel-body", child: "files" | "changes" }` then `layout.show { id: "panel" }` — and a pill
   that is already filled hides the sidebar with `layout.hide { id: "panel" }`. Same rule as
@@ -175,9 +178,12 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
 * `mods/grokbot/main.js` (~850 lines) — a `View` whose `render()` switches on `props().role`:
   `sidebar`, `header`, `activity`, `composer`, plus the three overlays `pick-space`, `new` and
   `rename-machine`. `mod.json` is `{"place": "none"}` so the mod never docks itself; only the
-  layout places it. `panelPill(id, label, icon)` next to `pill()` draws the Files/Changes buttons:
-  it reads `layout()?.children` for the `panel` and `panel-body` nodes to know whether it is the
-  filled one, and runs the show/hide/select commands above.
+  layout places it. The three side-column buttons come from one helper, `togglePill(id, label,
+  on, onClick, icon)`: outlined and grey when `on` is false, filled and white when it is true, with
+  a "Show …" / "Hide …" tooltip. `activityPill()` passes `on` = the `activity` node is not hidden and
+  runs `layout.toggle`; `panelPill(id, label, icon)` passes `on` = the `panel` node is shown *and*
+  the `panel-body` stack is on that child, read from `layout()?.children`, and runs the
+  hide/select/show commands above.
 * `mods/grokbot/machine-model.js` — `machineGroups(machines, spaces, agents)` (drops `temporary`
   machines, always includes this computer, sorts this one first then by name, and gives each
   machine its spaces and agents plus `layout: "ready" | "loading" | "unavailable"`),
@@ -271,7 +277,9 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
   "… is working on …", its dot pulses, the header chip turns teal and reads "Working", and the
   BOTS count starts reading "N waiting" when any agent is blocked.
 * The header's Activity pill hides and shows the Activity column; the sidebar toggle hides the
-  sidebar and the header's toggle button then sits clear of the macOS window buttons.
+  sidebar and the header's toggle button then sits clear of the macOS window buttons. The pill
+  itself goes grey while the column is away and filled white while it is up — the same two states
+  as Files and Changes.
 * A 340px Files sidebar sits at the far right, showing the focused pane's folder; the Changes
   pill swaps it for the git panel (and its pill is then the filled one), the Files pill swaps it
   back, and clicking the filled pill hides the whole sidebar without moving the window. The
