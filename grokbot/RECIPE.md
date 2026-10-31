@@ -2,17 +2,17 @@
 
 A whole window that pretends your coding agents are teammates you message: the sidebar is a
 buddy list of "Bots", the middle is the focused Bot's terminal as if it were a chat thread with a
-header card on top, and the right is an Activity feed of what the Bots have been up to. Dark,
-soft, purple-accented, no system title bar — the window looks like a chat app, not a terminal
-emulator.
+header card on top, and on the right an Activity feed of what the Bots have been up to, beside
+Herdr's Files/Changes browser in a second sidebar of its own. Dark, soft, purple-accented, no
+system title bar — the window looks like a chat app, not a terminal emulator.
 
 ![Grok Bot](preview.png)
 
 ## What you see
 
-Three columns on `#0b0b0e` (the sidebar and Activity) and `#101014` (the thread), separated by
-1px `#1f1f25` dividers. The window draws its own chrome: root has `"titlebar": "none"` and macOS
-draws its three window buttons over the sidebar at `[18, 20]`.
+Four columns on `#0b0b0e` (the sidebar, Activity and the Files sidebar) and `#101014` (the
+thread), separated by 1px `#1f1f25` dividers. The window draws its own chrome: root has
+`"titlebar": "none"` and macOS draws its three window buttons over the sidebar at `[18, 20]`.
 
 1. **Sidebar, 268px** (min 200, max 420, draggable), `#0b0b0e`, all text Geist:
    * A 44px empty strip at the top — room for the macOS window buttons.
@@ -44,8 +44,9 @@ draws its three window buttons over the sidebar at `[18, 20]`.
    * **Header card, 64px**, `#101014`, 1px bottom border `#24242b`: a 32px sidebar-toggle button,
      the current Bot's 36px avatar, its name 15px semibold, and under it 12px dim
      `t1j · hogwarts · ~/Workspace/app · main`. On the right: a status chip (26px, fully rounded,
-     12px semibold, tinted with the status color at 13% `22` alpha, with a 7px dot), then three
-     outlined pills — "Rename", "Computer", "Activity".
+     12px semibold, tinted with the status color at 13% `22` alpha, with a 7px dot), then five
+     pills — "Rename", "Computer", "Activity", "Files", "Changes". The last two are filled
+     (`#ffffff14`, full text colour) when that panel is the one showing, outlined otherwise.
    * **The conversation:** the active tab's terminals as cards, 10px gaps, 14px radius, 1px
      `#24242b` border that turns `#3a3a44` when focused, on `#101014`. Terminals use Geist Mono
      13px with 18/14 padding. A one-pane tab is framed too (`lone: false`).
@@ -60,6 +61,16 @@ draws its three window buttons over the sidebar at `[18, 20]`.
    * Pinned at the bottom, a memory card: `#16161a`, 14px radius, a purple dot with "MEMORY" in
      11px semibold `#a78bfa`, "Updated memory for Pi" 13px white, then "Works on hogwarts in
      ~/Workspace/app on main." and a last line "Last seen: …" (or "Runs Pi.") in 12px `#a1a1aa`.
+4. **Files / Changes sidebar, 340px** (min 260, max 720, draggable, shown by default),
+   `#0b0b0e`, 16px above and below one card, 14px gutters either side. No layout-drawn tab strip:
+   the header's Files and Changes pills choose what is in it.
+   * **Files** (the default) — Herdr's own file browser as a card: `#101014` at 10px radius with
+     a 1px `#24242b` border, a "Files" 13px semibold title with the folder on the right
+     ("playground"), then the lazy tree of the focused pane's folder: twisty, folder/file glyph,
+     name, folders first, `.git` left out.
+   * **Changes** — Herdr's git panel in the same slot: "Changes" with an "N files" chip and
+     "+N −N" on the right, the changed files (or "Not a git repository"), a diff viewer, and a
+     "Commit message" box with a Commit button along the bottom.
 
 Colors (from the layout's `colors`, matched by the mod's own constants): background `#101014`,
 ink/canvas `#0b0b0e`, card/surface `#16161a`, raised `#1f1f25`, border/line `#24242b`, edge
@@ -100,6 +111,11 @@ blocked `#f19d38`, done `#3c82f6`. Bot palette: `#ED712E`, `#EB4699`, `#885CF5`,
 * Header: the toggle runs `layout.toggle { id: "sidebar" }`, "Activity" runs
   `layout.toggle { id: "activity" }`, "Computer" runs `pane.split { direction: "right" }`,
   "Rename" renames the current Bot's tab, the status chip is not clickable.
+* "Files" and "Changes" show the right sidebar on that panel — `layout.select { stack:
+  "panel-body", child: "files" | "changes" }` then `layout.show { id: "panel" }` — and a pill
+  that is already filled hides the sidebar with `layout.hide { id: "panel" }`. Same rule as
+  Herdr's own tab-bar buttons: the filled one is the one showing, clicking it puts the sidebar
+  away. The two panels keep their state while hidden (the `files` tree keeps its open folders).
 * Feed rows focus that Bot (`agent.focus`).
 
 **The New Bot flow** (two overlay popups, both `mod: "grokbot"`):
@@ -152,10 +168,16 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
      `composer` (`block`, 96px, props `{role: "composer"}`, `"hidden": true`).
   3. `activity` — `block`, 300px, `min` 240, `max` 480, `window_drag: true`, `background
      #0b0b0e`, props `{role: "activity"}`.
+  4. `panel` — `column`, `"hidden": false`, 340px, `min` 260, `max` 720, `padding [16, 14]`,
+     `background #0b0b0e`, the last column. Its only child is `panel-body`, a `stack` with
+     `active: "files"` over two blocks: `files` (`{mod: "files"}`) and `changes`
+     (`{mod: "changes"}`) — Herdr's shipped mods, used as they are.
 * `mods/grokbot/main.js` (~850 lines) — a `View` whose `render()` switches on `props().role`:
   `sidebar`, `header`, `activity`, `composer`, plus the three overlays `pick-space`, `new` and
   `rename-machine`. `mod.json` is `{"place": "none"}` so the mod never docks itself; only the
-  layout places it.
+  layout places it. `panelPill(id, label, icon)` next to `pill()` draws the Files/Changes buttons:
+  it reads `layout()?.children` for the `panel` and `panel-body` nodes to know whether it is the
+  filled one, and runs the show/hide/select commands above.
 * `mods/grokbot/machine-model.js` — `machineGroups(machines, spaces, agents)` (drops `temporary`
   machines, always includes this computer, sorts this one first then by name, and gives each
   machine its spaces and agents plus `layout: "ready" | "loading" | "unavailable"`),
@@ -168,8 +190,10 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
   `window`, `settings`, `props`, `shared`/`setShared`, `run`, `openOverlay`/`closeOverlay`, `hc`,
   `home`, `knownAgents`, `setAgentOrder`.
 * Commands run: `agent.focus`, `pane.focus`, `tab.select`, `tab.rename`, `space.select`,
-  `space.new`, `tab.new`, `pane.split`, `layout.toggle`, `mod.open`, `app.settings`,
-  and overlays of the shipped mods `picker`, `prompt`, `worktree`, `machine-add`.
+  `space.new`, `tab.new`, `pane.split`, `layout.toggle`, `layout.select`, `layout.show`,
+  `layout.hide`, `mod.open`, `app.settings`, and overlays of the shipped mods `picker`,
+  `prompt`, `worktree`, `machine-add`. The sidebar itself is two shipped mods (`files`,
+  `changes`), so the layout needs no code for it.
 * Shared keys: `grokbot.folded` (open/closed sections — written only on click) and
   `grokbot.machine-name."<name>"` (display names for machines).
 * `gpui-base` for `h_flex`, `v_flex`, `InputState`, `Input`; `gpui-kit` for `div`, `svg`,
@@ -202,9 +226,18 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
   workspace picker take a `focus_handle` in `init` and `track_focus` it; the app-wide
   `cmd-1..9` (tab select) still works outside overlays. Skip the focus handle and the menu's
   shortcuts die.
-* **Sizes are tuned, not resilient.** Sidebar 268, Activity 300, header 64, composer 96.
-  The mod cannot measure its own block, so on a narrow window the Activity column is the first
-  thing to fold (it can be hidden) — the sidebar's min 200 keeps the Bot rows readable.
+* **Sizes are tuned, not resilient.** Sidebar 268, Activity 300, Files sidebar 340, header 64,
+  composer 96. The mod cannot measure its own block, so on a narrow window the Activity column is
+  the first thing to fold (it can be hidden) and the Files sidebar the second — the sidebar's
+  min 200 keeps the Bot rows readable.
+* **The right sidebar reuses Herdr's own node ids:** `panel` for the column, `panel-body` for the
+  stack, `files` / `changes` for its children — the same names the shipped tab bar drives with
+  `layout.select` / `layout.show` / `layout.hide`. Rename them and the pills act on nothing. The
+  pills are only drawn when a `panel` child exists, so the same mod still runs in a layout
+  without the sidebar.
+* **The `files` and `changes` mods draw their own card** (`#101014`, 10px radius, 1px border), so
+  the column adds nothing but `padding [16, 14]` and the `#0b0b0e` behind it. Below about 260px
+  the tree's names and glyphs collide; that is what `min` is for.
 * **Hex-alpha strings.** Status tints are built as `color + "22"`; they only work because every
   status color is `#rrggbb`. Keep them six digits.
 * **Unique element ids.** Every row needs a stable unique `id` (`gb-bot-<address>`,
@@ -222,8 +255,8 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
 * `herdr-app check ~/.config/herdr-app/mods/grokbot` exits clean, and after
   `herdr-app do layout.switch --name grokbot` (or the layout picker) `herdr-app status` reports
   no `errors`.
-* The window has no system title bar; the three columns fill it, the sidebar is 268px by
-  default and the two dividers are visible.
+* The window has no system title bar; the four columns fill it, the sidebar is 268px by
+  default, the Files sidebar 340px, and the three dividers are visible.
 * Every agent in `agents()` appears once under BOTS with a colored initial avatar, a name, a
   status word and a dim `machine/workspace/address` line; clicking one makes its tab the active
   tab and its terminal the focused one — and does **not** move the window.
@@ -237,6 +270,10 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
 * An agent going idle → working adds an Activity row within about a second reading
   "… is working on …", its dot pulses, the header chip turns teal and reads "Working", and the
   BOTS count starts reading "N waiting" when any agent is blocked.
-* The header's Activity pill hides and shows the right column; the sidebar toggle hides the
+* The header's Activity pill hides and shows the Activity column; the sidebar toggle hides the
   sidebar and the header's toggle button then sits clear of the macOS window buttons.
+* A 340px Files sidebar sits at the far right, showing the focused pane's folder; the Changes
+  pill swaps it for the git panel (and its pill is then the filled one), the Files pill swaps it
+  back, and clicking the filled pill hides the whole sidebar without moving the window. The
+  files tree still remembers its open folders after a hide/show.
 * `herdr-app shot` saves a picture that matches `preview.png`.

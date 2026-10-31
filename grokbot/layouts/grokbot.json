@@ -135,6 +135,44 @@
           "role": "activity"
         }
       }
+    },
+    {
+      "id": "panel",
+      "type": "column",
+      "hidden": false,
+      "size": {
+        "px": 340
+      },
+      "min": 260,
+      "max": 720,
+      "padding": [
+        16,
+        14
+      ],
+      "background": "#0b0b0e",
+      "children": [
+        {
+          "id": "panel-body",
+          "type": "stack",
+          "active": "files",
+          "children": [
+            {
+              "id": "files",
+              "type": "block",
+              "content": {
+                "mod": "files"
+              }
+            },
+            {
+              "id": "changes",
+              "type": "block",
+              "content": {
+                "mod": "changes"
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

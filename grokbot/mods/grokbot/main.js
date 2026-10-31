@@ -208,6 +208,40 @@ function pill(id, label, onClick, solid = false) {
     .child(label);
 }
 
+// Files and Changes share the right sidebar (layout nodes "panel" / "panel-body"),
+// the way Herdr's own tab bar switches them: clicking the shown one hides the panel.
+function panelPill(id, label, icon) {
+  const panel = layout()?.children?.find((n) => n.id === "panel");
+  const body = panel?.children?.find((n) => n.id === "panel-body");
+  const on = Boolean(panel && !panel.hidden && body?.active === id);
+  return own(h_flex())
+    .id(`gb-panel-${id}`)
+    .flex_none()
+    .h(32)
+    .px(12)
+    .gap(6)
+    .items_center()
+    .justify_center()
+    .rounded_full()
+    .cursor_pointer()
+    .text_size(13)
+    .font_semibold()
+    .when(on, (el) => el.bg("#ffffff14").text_color(C.text))
+    .when(!on, (el) => el.border_1().border_color(C.edge).text_color(C.muted).hover((s) => s.bg("#ffffff0d").text_color(C.text)))
+    .tooltip(on ? `Hide ${label}` : `Show ${label}`)
+    .accessibility_label(on ? `Hide ${label}` : `Show ${label}`)
+    .on_click((_event, cx) => {
+      cx.stop_propagation();
+      if (on) run("layout.hide", { id: "panel" });
+      else {
+        run("layout.select", { stack: "panel-body", child: id });
+        run("layout.show", { id: "panel" });
+      }
+    })
+    .child(svg(icon).size(14))
+    .child(label);
+}
+
 const section = (id, text, extra = "", key = null) =>
   own(h_flex())
     .id(`gb-section-${id}`)
@@ -544,7 +578,11 @@ export default class GrokBot extends View {
         el.child(pill("gb-rename-current", "Rename", () => renameTab(a?.tab ?? tab?.id))),
       )
       .child(pill("gb-split", "Computer", () => run("pane.split", { direction: "right" })))
-      .child(pill("gb-activity", "Activity", () => run("layout.toggle", { id: "activity" })));
+      .child(pill("gb-activity", "Activity", () => run("layout.toggle", { id: "activity" })))
+      .when(Boolean(layout()?.children?.some((n) => n.id === "panel")), (el) =>
+        el.child(panelPill("files", "Files", "mods/files/file.svg"))
+          .child(panelPill("changes", "Changes", "mods/changes/changes.svg")),
+      );
   }
 
   composer() {

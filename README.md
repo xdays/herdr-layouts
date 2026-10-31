@@ -6,7 +6,7 @@ Each folder here is one whole window: a `layouts/<name>.json`, the `mods/` it ne
 
 | Layout | What it is | Files |
 |---|---|---|
-| **Grok Bot** | Your coding agents as teammates you message: a buddy list of Bots, the focused Bot's terminal as a chat thread, and an Activity feed. | [`grokbot/`](grokbot/) · [preview](grokbot/preview.png) · [recipe](grokbot/RECIPE.md) |
+| **Grok Bot** | Your coding agents as teammates you message: a buddy list of Bots, the focused Bot's terminal as a chat thread, an Activity feed, and Herdr's Files/Changes browser in a right sidebar. | [`grokbot/`](grokbot/) · [preview](grokbot/preview.png) · [recipe](grokbot/RECIPE.md) |
 
 ![Grok Bot](grokbot/preview.png)
 
@@ -30,7 +30,8 @@ Then switch to it with `cmd-shift-l` (or `herdr-app do layout.switch --name grok
 overwritten as long as those names are free — rename the file, the `mod` references and the
 `mods/<name>/` asset paths together if they aren't. Leave `RECIPE.md` and `preview.png` out of
 `~/.config/herdr-app`; they are for reading, not for the app. Your own layout stays as it was, and
-deleting the files removes this one.
+deleting the files removes this one. The Files and Changes sidebar needs nothing extra: those
+panels ship with Herdr.
 
 **Discard the layout if it goes wrong:** `ctrl-alt-shift-escape` always works — it sets the shown
 layout and `keys.json` aside and returns to the default layout.
