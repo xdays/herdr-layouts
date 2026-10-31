@@ -175,7 +175,7 @@ picture at `layouts/grokbot.svg`, a 320×200 flat drawing of the window in the s
      `background #0b0b0e`, the last column. Its only child is `panel-body`, a `stack` with
      `active: "files"` over two blocks: `files` (`{mod: "files"}`) and `changes`
      (`{mod: "changes"}`) — Herdr's shipped mods, used as they are.
-* `mods/grokbot/main.js` (~850 lines) — a `View` whose `render()` switches on `props().role`:
+* `mods/grokbot/main.js` (~900 lines) — a `View` whose `render()` switches on `props().role`:
   `sidebar`, `header`, `activity`, `composer`, plus the three overlays `pick-space`, `new` and
   `rename-machine`. `mod.json` is `{"place": "none"}` so the mod never docks itself; only the
   layout places it. The three side-column buttons come from one helper, `togglePill(id, label,
